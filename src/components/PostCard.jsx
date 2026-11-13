@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FILE_TYPE_META, GRADES, categoryLabel, formatDate, openFileUrl } from '../constants'
+import { FILE_TYPE_META, GRADES, categoryLabel, formatDate, learningStyleOf, openFileUrl } from '../constants'
 import { store } from '../store'
 
 function ChunkedPreview({ item, coll, title }) {
@@ -209,6 +209,7 @@ export function PostCard({ post, isTeacher, onEdit, onDelete }) {
 
 export function StrategyCard({ item, accent, coll = 'strategies', isTeacher, onEdit, onDelete }) {
   const hasFile = item.fileUrl || item.chunked
+  const styleMeta = learningStyleOf(item.style)
   return (
     <article className={`board-card overflow-hidden rounded-2xl border bg-white shadow-md ${accent?.cardBorder || 'border-indigo-100 shadow-indigo-100/60'}`}>
       {hasFile && <FilePreview item={item} coll={coll} title={item.title} />}
@@ -221,6 +222,11 @@ export function StrategyCard({ item, accent, coll = 'strategies', isTeacher, onE
             <TeacherActions onEdit={onEdit} onDelete={onDelete} />
           )}
         </div>
+        {styleMeta && (
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-bold text-indigo-600 ring-1 ring-indigo-100">
+            {styleMeta.icon} {styleMeta.label}
+          </span>
+        )}
         {item.content && (
           <p className="whitespace-pre-line text-sm leading-relaxed text-gray-600">
             {item.content}

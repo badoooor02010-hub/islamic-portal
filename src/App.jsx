@@ -7,7 +7,7 @@ import { PostCard, StrategyCard } from './components/PostCard'
 import SideFrames from './components/SideFrames'
 import Sidebar from './components/Sidebar'
 import StrategyModal from './components/StrategyModal'
-import { SECTION_ACCENTS, TABS, TEACHER_TABS } from './constants'
+import { LEARNING_STYLES, SECTION_ACCENTS, TABS, TEACHER_TABS } from './constants'
 import { store } from './store'
 
 export default function App() {
@@ -18,6 +18,8 @@ export default function App() {
   const [isTeacher, setIsTeacher] = useState(false)
   const [modal, setModal] = useState(null) // 'add' | 'login' | 'strategy'
   const [editing, setEditing] = useState(null)
+  const [styleFilter, setStyleFilter] = useState('all')
+  const [defaultStyle, setDefaultStyle] = useState('visual')
   const [toast, setToast] = useState('')
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [dbError, setDbError] = useState(false)
@@ -50,6 +52,7 @@ export default function App() {
   const switchTab = (t) => {
     setTab(t)
     setFilter('all')
+    setStyleFilter('all')
   }
 
   const gradePosts = useMemo(
@@ -219,7 +222,25 @@ export default function App() {
           </div>
 
           {isTeacherTab ? (
-            sectionItems.length === 0 ? (
+            tab === 'learningStyles' ? (
+              <LearningStylesBoard
+                items={sectionItems}
+                filter={styleFilter}
+                onFilter={setStyleFilter}
+                isTeacher={isTeacher}
+                accent={accent}
+                onAdd={(style) => {
+                  setEditing(null)
+                  setDefaultStyle(style)
+                  setModal('strategy')
+                }}
+                onEdit={(item) => {
+                  setEditing(item)
+                  setModal('strategy')
+                }}
+                onDelete={handleDeleteStrategy}
+              />
+            ) : sectionItems.length === 0 ? (
               <EmptyState
                 icon={TABS[tab].emoji}
                 title="لا يوجد محتوى منشور بعد"
@@ -292,6 +313,7 @@ export default function App() {
         <StrategyModal
           section={tab}
           initial={editing}
+          defaultStyle={styleFilter !== 'all' ? styleFilter : defaultStyle}
           onClose={closeModal}
           onSubmit={handleStrategySubmit}
         />
@@ -326,6 +348,158 @@ function EmptyState({ icon, title, subtitle }) {
       <span className="animate-float p-1 text-5xl leading-[1.3]">{icon}</span>
       <p className="font-display text-lg font-extrabold text-indigo-800">{title}</p>
       <p className="text-sm font-medium text-indigo-500/80">{subtitle}</p>
+    </div>
+  )
+}
+
+function StyleChip({ active, onClick, children, count }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 ${
+        active
+          ? 'bg-gradient-to-l from-indigo-400 to-sky-400 text-white shadow-md shadow-indigo-200/60'
+          : 'bg-white/80 text-indigo-800 ring-1 ring-indigo-100 hover:bg-indigo-50'
+      }`}
+    >
+      {children}
+      <span
+        className={`rounded-full px-1.5 py-0.5 text-[11px] leading-none ${
+          active ? 'bg-white/25' : 'bg-indigo-100 text-indigo-600'
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  )
+}
+
+function StyleSection({ style, items, isTeacher, accent, onAdd, onEdit, onDelete }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 rounded-3xl border border-indigo-100 bg-white/80 p-5 shadow-sm backdrop-blur-sm">
+        <div className="flex items-start gap-3">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-indigo-50 text-2xl ring-1 ring-indigo-100">
+            {style.icon}
+          </span>
+          <div>
+            <h3 className="font-display text-lg font-extrabold text-indigo-900">
+              {style.label}
+              <span dir="ltr" className="mr-2 text-xs font-semibold text-indigo-400">
+                {style.en} Learner
+              </span>
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm font-medium leading-relaxed text-gray-600">
+              {style.desc}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-indigo-500/90">
+              💡 {style.hint}
+            </p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600 ring-1 ring-indigo-100">
+            {items.length} عنصر
+          </span>
+          {isTeacher && (
+            <button
+              onClick={() => onAdd(style.id)}
+              className="rounded-xl bg-gradient-to-l from-indigo-400 to-sky-400 px-4 py-2 text-sm font-extrabold text-white shadow-md shadow-indigo-200/60 transition hover:scale-105"
+            >
+              ➕ إضافة هنا
+            </button>
+          )}
+        </div>
+      </div>
+
+      {items.length === 0 ? (
+        <p className="rounded-2xl border-2 border-dashed border-indigo-200 bg-white/50 px-4 py-8 text-center text-sm font-semibold text-indigo-400">
+          لا يوجد محتوى في {style.label} بعد
+          {isTeacher ? ' — اضغطي "إضافة هنا" لنشر أول استراتيجية' : ''}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {items.map((item) => (
+            <StrategyCard
+              key={item.id}
+              item={item}
+              accent={accent}
+              coll="learningStyles"
+              isTeacher={isTeacher}
+              onEdit={() => onEdit(item)}
+              onDelete={() => onDelete(item)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function LearningStylesBoard({ items, filter, onFilter, isTeacher, accent, onAdd, onEdit, onDelete }) {
+  const counts = {}
+  const uncategorized = []
+  for (const item of items) {
+    if (LEARNING_STYLES.some((s) => s.id === item.style)) {
+      counts[item.style] = (counts[item.style] || 0) + 1
+    } else {
+      uncategorized.push(item)
+    }
+  }
+  const visible =
+    filter === 'all' ? LEARNING_STYLES : LEARNING_STYLES.filter((s) => s.id === filter)
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center gap-2">
+        <StyleChip active={filter === 'all'} onClick={() => onFilter('all')} count={items.length}>
+          ✨ الكل
+        </StyleChip>
+        {LEARNING_STYLES.map((s) => (
+          <StyleChip
+            key={s.id}
+            active={filter === s.id}
+            onClick={() => onFilter(s.id)}
+            count={counts[s.id] || 0}
+          >
+            {s.icon} {s.label}
+          </StyleChip>
+        ))}
+      </div>
+
+      {visible.map((s) => (
+        <StyleSection
+          key={s.id}
+          style={s}
+          items={items.filter((it) => it.style === s.id)}
+          isTeacher={isTeacher}
+          accent={accent}
+          onAdd={onAdd}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      ))}
+
+      {filter === 'all' && uncategorized.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="font-display text-base font-extrabold text-gray-500">
+            📎 غير مصنف
+          </h3>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {uncategorized.map((item) => (
+              <StrategyCard
+                key={item.id}
+                item={item}
+                accent={accent}
+                coll="learningStyles"
+                isTeacher={isTeacher}
+                onEdit={() => onEdit(item)}
+                onDelete={() => onDelete(item)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

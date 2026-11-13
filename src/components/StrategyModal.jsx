@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
-import { SECTION_ACCENTS, TABS } from '../constants'
+import { LEARNING_STYLES, SECTION_ACCENTS, TABS } from '../constants'
 import Modal from './Modal'
 
-export default function StrategyModal({ section = 'strategies', initial, onClose, onSubmit }) {
+export default function StrategyModal({ section = 'strategies', initial, defaultStyle = 'visual', onClose, onSubmit }) {
   const isEdit = Boolean(initial)
   const accent = SECTION_ACCENTS[section]
   const sectionLabel = TABS[section]?.label || 'استراتيجية'
+  const [style, setStyle] = useState(initial?.style || defaultStyle)
   const [title, setTitle] = useState(initial?.title || '')
   const [content, setContent] = useState(initial?.content || '')
   const [file, setFile] = useState(null)
@@ -22,7 +23,11 @@ export default function StrategyModal({ section = 'strategies', initial, onClose
     setError('')
     try {
       await onSubmit(
-        { title: title.trim(), content: content.trim() },
+        {
+          title: title.trim(),
+          content: content.trim(),
+          ...(section === 'learningStyles' ? { style } : {}),
+        },
         file,
         (done, total) => setProgress(Math.round((done / total) * 100)),
       )
@@ -50,6 +55,25 @@ export default function StrategyModal({ section = 'strategies', initial, onClose
       wide
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {section === 'learningStyles' && (
+          <div>
+            <label className="mb-1.5 block text-sm font-bold text-gray-700">
+              نمط التعلم
+            </label>
+            <select
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              className="w-full rounded-xl border border-indigo-200 bg-indigo-50/40 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-200"
+            >
+              {LEARNING_STYLES.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.icon} {s.label} ({s.en})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
           <label className="mb-1.5 block text-sm font-bold text-gray-700">
             العنوان

@@ -32,7 +32,7 @@ export default function HexNav({ active, onChange }) {
               }`}
             />
             <span
-              className={`hex-inner hex-clip flex flex-col items-center justify-center gap-2 ${
+              className={`hex-inner hex-clip flex flex-col items-center justify-center gap-1.5 px-2 ${
                 isActive
                   ? 'bg-gradient-to-br from-indigo-500/95 via-indigo-400/95 to-sky-300/95 text-white'
                   : 'bg-white/95 text-indigo-900'
@@ -51,11 +51,11 @@ export default function HexNav({ active, onChange }) {
                   strokeWidth={2.2}
                 />
               </span>
-              <span className="font-display text-base font-extrabold leading-snug sm:text-lg">
+              <span className="w-full text-balance text-center font-display text-[13px] font-extrabold leading-tight sm:text-base">
                 {tab.label}
               </span>
               <span
-                className={`text-[11px] font-semibold leading-none ${
+                className={`w-full text-center text-[11px] font-semibold leading-none ${
                   isActive ? 'text-indigo-100' : 'text-indigo-400'
                 }`}
               >

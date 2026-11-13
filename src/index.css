@@ -116,7 +116,7 @@ body {
   position: fixed;
   top: 0;
   bottom: 0;
-  width: clamp(16px, 3.4vw, 62px);
+  width: clamp(10px, 1.5vw, 28px);
   background-image: url('/frame-border.png');
   background-repeat: repeat-y;
   background-size: 100% auto;
@@ -124,7 +124,7 @@ body {
   user-select: none;
   z-index: 30;
   opacity: 0.38;
-  filter: drop-shadow(0 0 6px rgba(30, 58, 138, 0.2));
+  filter: drop-shadow(0 0 4px rgba(30, 58, 138, 0.15));
   transition: width 0.3s ease;
 }
 .side-frame-right {
